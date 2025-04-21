@@ -1,4 +1,4 @@
-# edu_track_project
+# edutrack-flutter
 
 A new Flutter project.
 
