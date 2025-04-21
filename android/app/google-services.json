@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "387844939134",
+    "project_id": "flutter-edutrack",
+    "storage_bucket": "flutter-edutrack.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:387844939134:android:5e51947e9b38d267dfa72f",
+        "android_client_info": {
+          "package_name": "com.example.edu_track_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjjTfUrqZI_94cDXrdxWVsKcznM9MklQc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
