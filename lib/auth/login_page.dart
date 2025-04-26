@@ -54,9 +54,12 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Login successful")),
       );
-    } catch (e) {
+
+    
+      Navigator.pushReplacementNamed(context, '/main');
+    }on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login failed: $e")),
+        SnackBar(content: Text("Login failed: ${e.message}")),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -81,33 +84,33 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(
                       fontFamily: 'SpecialGothic',
                       fontSize: 40,
-                      color: Colors.white,
+                      color: Color(0xFFB388F5),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
                     'Log in to your account',
-                    style: TextStyle(color: Colors.white60,
-                    fontFamily: 'SpecialGothic',
-                      fontSize: 17),
+                    style: TextStyle(
+                        color: Colors.white60,
+                        fontFamily: 'SpecialGothic',
+                        fontSize: 17),
                   ),
                   const SizedBox(height: 32),
                   TextFormField(
                     controller: emailOrUsernameController,
                     style: const TextStyle(color: Colors.white),
-                    decoration: customInputDecoration('Email or Username'),
+                    decoration: customInputDecoration('Email'),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Please enter your email or username';
+                        return 'Please enter your email';
                       }
                       final isEmail = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w]{2,4}$')
                           .hasMatch(value.trim());
-                      final isValidUsername = RegExp(r'^[a-zA-Z][a-zA-Z0-9]+$')
-                          .hasMatch(value.trim());
+                      
 
-                      if (!isEmail && !isValidUsername) {
-                        return 'Enter a valid email or username.\nUsername must start with a letter and contain only letters and numbers';
+                      if (!isEmail) {
+                        return 'Enter a valid email.';
                       }
 
                       return null;

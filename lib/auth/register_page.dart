@@ -70,9 +70,9 @@ class _RegisterPageState extends State<RegisterPage> {
         context,
         MaterialPageRoute(builder: (context) => const LoginPage()),
       );
-    } catch (e) {
+    }on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Signup failed: $e")),
+        SnackBar(content: Text("Signup failed: ${e.message}")),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -96,7 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: TextStyle(
                       fontFamily: 'SpecialGothic',
                       fontSize: 40,
-                      color: Colors.white,
+                      color: Color(0xFFB388F5),
                       fontWeight: FontWeight.bold,
                     ),
                   ),

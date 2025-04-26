@@ -14,8 +14,7 @@ class SplashPage extends StatelessWidget {
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Placeholder for logo
+            children: [             
               SvgPicture.asset(
                 'lib/assets/images/EDU-2.svg',
                 width: 250,
