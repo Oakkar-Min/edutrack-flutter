@@ -1,15 +1,18 @@
 import 'package:edu_track_project/auth/splash_page.dart';
+import 'package:edu_track_project/exam/exams.dart';
+import 'package:edu_track_project/home/assignment.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'auth/login_page.dart';
 import 'auth/register_page.dart';
 import 'home/main_page.dart';
-import 'home/assignment.dart';
 import 'home/study_planner.dart';
-import 'home/exams.dart';
 import 'home/class_schedule.dart';
+import 'package:edu_track_project/exam/add_exam_page.dart';
+import 'package:edu_track_project/exam/edit_exam_page.dart';
 import 'auth/auth_wrapper.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,14 +50,17 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const AuthWrapper(),
+        // '/': (context) => const SplashPage(),
         '/splash': (context) => const SplashPage(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/main': (context) => const MainPage(),
-        '/assignments': (context) =>  AssignmentPage(),
+        '/assignments': (context) =>  const AssignmentTrackerPage(),
         '/planner': (context) => const StudyPlannerPage(), 
-        '/exams': (context) => const ExamsPage(),
+        '/exams': (context) => const ExamPage(),
         '/classSchedule': (context) => const ClassSchedulePage(), 
+        '/add_exam': (context) => const AddExamPage(),
+        '/edit_exam': (context) => const EditExamPage(),
       },
     );
   }

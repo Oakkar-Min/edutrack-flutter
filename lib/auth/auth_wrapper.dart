@@ -21,7 +21,7 @@ class AuthWrapper extends StatelessWidget {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (snapshot.hasData) {
             print("has data");
-            Navigator.pushReplacementNamed(context, '/main');
+            Navigator.pushReplacementNamed(context, '/main' );
           } else {
             print("no data");
             Navigator.pushReplacementNamed(context, '/splash');

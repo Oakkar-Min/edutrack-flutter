@@ -1,188 +1,116 @@
 import 'package:flutter/material.dart';
+import 'package:edu_track_project/widgets/schedule_card.dart';
 
-class ClassSchedulePage extends StatefulWidget {
+class ClassSchedulePage extends StatelessWidget {
   const ClassSchedulePage({super.key});
 
   @override
-  State<ClassSchedulePage> createState() => _ClassSchedulePageState();
-}
-
-class _ClassSchedulePageState extends State<ClassSchedulePage> {
-  String selectedDay = 'Wed';
-
-  final Map<String, List<Map<String, String>>> classSchedule = {
-    'Mon': [
-      {
-        'time': '9:00 - 10:30',
-        'title': 'Math 101',
-        'room': 'Room A1',
-        'type': 'Offline',
-      },
-    ],
-    'Tue': [
-      {
-        'time': '11:00 - 12:30',
-        'title': 'History 201',
-        'room': 'Room B2',
-        'type': 'Online',
-      },
-    ],
-    'Wed': [
-      {
-        'time': '8:00 - 12:00',
-        'title': 'CSC 304 Linear Algebra',
-        'room': 'CB2312',
-        'type': 'Online',
-      },
-      {
-        'time': '1:00 - 2:30',
-        'title': 'ENG 102 English',
-        'room': 'Room C1',
-        'type': 'Offline',
-      },
-    ],
-    'Thu': [],
-    'Fri': [
-      {
-        'time': '2:00 - 3:00',
-        'title': 'Chemistry',
-        'room': 'Lab 1',
-        'type': 'Offline',
-      },
-    ],
-    'Sun': [],
-  };
-
-  @override
   Widget build(BuildContext context) {
-    final tasks = classSchedule[selectedDay] ?? [];
-
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1E),
+      backgroundColor: const Color(0xFF1A1A2E),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1C1C1E),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFFB388F5)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('Class Scheduler', style: TextStyle(color: Colors.white)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Color(0xFFB388F5)),
-            onPressed: () {},
-          )
-        ],
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        
+        title: Text('Class Schedule', style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+        // actions: [
+        //   Icon(Icons.refresh, color: Colors.white),
+        // ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          // crossAxisAlignment: CrossAxisAlignment.start ,
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2C2C2E),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Color(0xFFB388F5)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Today's date: 20-2-2025 (Wednesday)",
-                    style: const TextStyle(color: Colors.white),
+            
+              
+               Padding(
+                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                 child: Container(
+                  
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2E2E48),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "You have ${tasks.length} class${tasks.length == 1 ? '' : 'es'} to attend today.",
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sun']
-                  .map((day) => GestureDetector(
-                        onTap: () => setState(() => selectedDay = day),
-                        child: DayButton(day: day, selected: selectedDay == day),
-                      ))
-                  .toList(),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: tasks.isEmpty
-                  ? const Center(
-                      child: Text("No classes scheduled.", style: TextStyle(color: Colors.white70)),
-                    )
-                  : ListView.builder(
-                      itemCount: tasks.length,
-                      itemBuilder: (context, index) {
-                        final task = tasks[index];
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2C2C2E),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Color(0xFFB388F5)),
-                          ),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 60,
-                                child: Text(task['time'] ?? '',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(color: Colors.white70)),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(task['title'] ?? '',
-                                        style: const TextStyle(
-                                            color: Colors.white, fontWeight: FontWeight.bold)),
-                                    Text("Classroom : ${task['room']}", style: const TextStyle(color: Colors.white70)),
-                                    Text("Type : ${task['type']}", style: const TextStyle(color: Colors.white70)),
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
-                        );
-                      },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      
+                      children: [
+                        Text(
+                          "Today's date :",
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "20-2-2025 (Wednesday)",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          "You have 5 classes to attend today.",
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                        ),
+                      ],
                     ),
+                  ),
+                               ),
+               ),
+            
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                dayButton("Sat"),
+                dayButton("Mon"),
+                dayButton("Tue"),
+                dayButton("Wed", isSelected: true),
+                dayButton("Thu"),
+                dayButton("Fri"),
+                dayButton("Sun"),
+              ],
+            ),
+            SizedBox(height: 20),
+            Expanded(
+              flex: 5,
+              child: ListView.builder(
+                padding: const EdgeInsets.only(bottom: 16),
+                itemCount: 5, // 5 dummy schedules
+                itemBuilder: (context, index) {
+                  return ScheduleCard(
+                    startTime: "8:00",
+                    endTime: "12:00",
+                    subject: "CSC 304 Linear Algebra",
+                    room: "CB2312",
+                    type: index % 2 == 0 ? "Online" : "Onsite", 
+                  );
+                },
+              ),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class DayButton extends StatelessWidget {
-  final String day;
-  final bool selected;
-
-  const DayButton({super.key, required this.day, this.selected = false});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget dayButton(String label, {bool isSelected = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: selected ? const Color(0xFFB388F5) : const Color(0xFF2C2C2E),
+        color: isSelected ? Colors.purple : const Color(0xFF2E2E48),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFB388F5)),
       ),
       child: Text(
-        day,
+        label,
         style: TextStyle(
-          color: selected ? Colors.white : Colors.white70,
+          color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
       ),

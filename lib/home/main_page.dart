@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:edu_track_project/exam/exam_card.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -8,12 +9,22 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentDate = DateFormat('d MMMM, yyyy').format(DateTime.now());
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    String username = currentUser?.displayName ?? "Username";
+
+    final dummyExam = {
+      'subject': 'CSC 304 Linear Algebra',
+      'examType': 'Midterm',
+      'venue': 'CB2308',
+      'date': '22-10-2025',
+      'time': '10:00 AM',
+    };
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1E),
+      backgroundColor: const Color(0xFF1E1E2E),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,9 +37,9 @@ class MainPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      "Hey, Username!",
-                      style: TextStyle(
+                    Text(
+                      "Hey, $username !",
+                      style: const TextStyle(
                         color: Color(0xFFB388F5),
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -52,15 +63,31 @@ class MainPage extends StatelessWidget {
                 const SizedBox(height: 24),
                 _sectionTitle(context, "Upcoming exams", '/exams'),
                 const SizedBox(height: 12),
+                
                 SizedBox(
-                  height: 160, // Adjust height as needed
-                  child: ListView.separated(
+                  height: 180, // Adjust based on ExamCard height
+                  child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: 5, // Replace with dynamic count if needed
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (_, index) => _examCard(),
+                    itemCount:
+                        1, // Will be replaced with Firestore length later
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: SizedBox(
+                          width: 250, // Optional: keeps all cards same width
+                          child: ExamCard(
+                            examType: dummyExam['examType']!,
+                            subject: dummyExam['subject']!,
+                            venue: dummyExam['venue']!,
+                            date: dummyExam['date']!,
+                            time: dummyExam['time']!,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
+
                 const SizedBox(height: 24),
                 _sectionTitle(context, "Class schedule", '/classSchedule'),
                 Column(
@@ -112,18 +139,18 @@ class MainPage extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF2C2C2E),
+            color: const Color(0xFF2E2E48),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Color(0xFFB388F5), width: 1),
+            // border: Border.all(color: Color(0xFFB388F5), width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("$title",
-                
                   style: const TextStyle(
                       color: Color(0xFFB388F5),
-                      fontSize: 18 ,fontWeight: FontWeight.bold)),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -165,49 +192,53 @@ class MainPage extends StatelessWidget {
                 color: Color(0xFFB388F5),
                 fontSize: 18,
                 fontWeight: FontWeight.bold)),
-        GestureDetector(
-          onTap: () => Navigator.pushNamed(context, route),
-          child: const Text("View all >>",
-              style: TextStyle(color: Colors.white70)),
-        ),
+        TextButton(
+          onPressed: () => Navigator.pushNamed(context, route),
+          child: const Text(
+            "View all >>",
+            style: TextStyle(
+              color: Color(0xFFB388F5), // brighter or primary color
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        )
       ],
     );
   }
 
-  Widget _examCard() {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.only(top: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2C2C2E),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Color(0xFFB388F5), width: 1),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text("CSC 304 Linear Algebra",
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold)),
-            SizedBox(height: 4),
-            Text("Type: Midterm", style: TextStyle(color: Colors.white70)),
-            Text("Date: 22-10-2025", style: TextStyle(color: Colors.white70)),
-            Text("Venue: CB2308", style: TextStyle(color: Colors.white70)),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _examCard() {
+  //   return Container(
+  //     height: 160,
+  //     margin: const EdgeInsets.symmetric(horizontal: 8),
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(
+  //       color: const Color(0xFF2E2E48),
+  //       borderRadius: BorderRadius.circular(12),
+  //     ),
+  //     child: Column(
+  //       mainAxisAlignment: MainAxisAlignment.center,
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: const [
+  //         Text("CSC 304 Linear Algebra",
+  //             style:
+  //                 TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+  //         SizedBox(height: 4),
+  //         Text("Type: Midterm", style: TextStyle(color: Colors.white70)),
+  //         Text("Date: 22-10-2025", style: TextStyle(color: Colors.white70)),
+  //         Text("Venue: CB2308", style: TextStyle(color: Colors.white70)),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _classCard() {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C2E),
+        color: const Color(0xFF2E2E48),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Color(0xFFB388F5), width: 1),
+        // border: Border.all(color: Color(0xFFB388F5), width: 1),
       ),
       child: Row(
         children: [
@@ -218,15 +249,17 @@ class MainPage extends StatelessWidget {
                 style: TextStyle(color: Colors.white70)),
           ),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text("CSC 304 Linear Algebra",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold)),
-              Text("Classroom : CB2312",
-                  style: TextStyle(color: Colors.white70)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text("CSC 304 Linear Algebra",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+                Text("Classroom : CB2312",
+                    style: TextStyle(color: Colors.white70)),
+              ],
+            ),
           )
         ],
       ),
