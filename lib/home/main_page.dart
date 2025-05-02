@@ -108,7 +108,41 @@ class _MainPageState extends State<MainPage> {
                     },
                   ),
                   const SizedBox(width: 12),
-                  _buildCard(context, "Study Planner", "10", "5", '/planner'),
+                 StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('studyTasks').where('creator',isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const CircularProgressIndicator();
+                      }
+
+                      final docs = snapshot.data!.docs;
+
+                      // Count completed and to-do (pending or overdue) study tasks
+                      int completed = 0;
+                      int todo = 0;
+
+                      for (var doc in docs) {
+                        final data = doc.data();
+                        final String status = data['status'] ?? 'Pending';
+
+                        if (status == 'Completed') {
+                          completed++;
+                        } else {
+                          todo++;
+                        }
+                      }
+
+                      return _buildCard(
+                        context,
+                        "Study Planner",
+                        completed.toString(),
+                        todo.toString(),
+                        '/planner',
+                      );
+                    },
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -224,7 +258,7 @@ class _MainPageState extends State<MainPage> {
                           color: Colors.white,
                           fontWeight: FontWeight.bold)),
                   const Text("Completed",
-                      style: TextStyle(color: Colors.white70)),
+                      style: TextStyle(color: Colors.white70,fontSize: 18)),
                 ],
               ),
               const SizedBox(height: 4),
@@ -236,7 +270,7 @@ class _MainPageState extends State<MainPage> {
                           fontSize: 18,
                           color: Colors.white,
                           fontWeight: FontWeight.bold)),
-                  const Text("To Do", style: TextStyle(color: Colors.white70)),
+                  const Text("To Do", style: TextStyle(color: Colors.white70,fontSize:18 )),
                 ],
               ),
             ],

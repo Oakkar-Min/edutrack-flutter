@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AddTaskPage extends StatelessWidget {
@@ -33,10 +35,8 @@ class TaskForm extends StatefulWidget {
 }
 
 class _TaskFormState extends State<TaskForm> {
-  final TextEditingController _titleController =
-      TextEditingController(text: 'Read Linear Algebra');
-  final TextEditingController _descriptionController =
-      TextEditingController(text: 'Chapter 3 Exercises');
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
   String selectedStatus = 'Pending';
 
   @override
@@ -44,12 +44,12 @@ class _TaskFormState extends State<TaskForm> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          _buildTextField('Title', _titleController),
+          _buildTextField('Title', _titleController, hintText: 'Enter a new task'),
           const SizedBox(height: 16),
           _buildDropdown('Status'),
           const SizedBox(height: 16),
           _buildTextField('Description (Optional)', _descriptionController,
-              maxLines: 5),
+              maxLines: 5, hintText: 'Enter a description'),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -73,18 +73,33 @@ class _TaskFormState extends State<TaskForm> {
     );
   }
 
-  void _handleSubmit() {
-    final creationDate = DateTime.now();
-    print("Title: ${_titleController.text}");
-    print("Status: $selectedStatus");
-    print("Description: ${_descriptionController.text}");
-    print("Created at: $creationDate");
+  void _handleSubmit() async {
+    final title = _titleController.text.trim();
+    final description = _descriptionController.text.trim();
+    final createdAt = DateTime.now();
 
-    Navigator.pop(context); // Close after submission
+    if (title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Title cannot be empty')),
+      );
+      return;
+    }
+
+    final taskData = {
+      'title': title,
+      'description': description,
+      'status': selectedStatus,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'creator': FirebaseAuth.instance.currentUser!.uid,
+    };
+
+    await FirebaseFirestore.instance.collection('studyTasks').add(taskData);
+
+    Navigator.pop(context);
   }
 
   Widget _buildTextField(String label, TextEditingController controller,
-      {int maxLines = 1}) {
+      {int maxLines = 1, String? hintText}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -95,6 +110,8 @@ class _TaskFormState extends State<TaskForm> {
           maxLines: maxLines,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: const TextStyle(color: Colors.white54),
             filled: true,
             fillColor: const Color(0xFF2E2E48),
             border: OutlineInputBorder(
@@ -154,3 +171,4 @@ class _TaskFormState extends State<TaskForm> {
     );
   }
 }
+
