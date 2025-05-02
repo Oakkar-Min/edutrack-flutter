@@ -1,43 +1,60 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:edu_track_project/exam/exam_card.dart';
+import 'package:edu_track_project/class/schedule_card.dart';
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
   const MainPage({super.key});
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  List<Map<String, String>> exams = List.generate(5, (index) {
+    return {
+      'examType': index % 2 == 0 ? 'Module1' : 'Module2',
+      'subject': 'CSC ${101 + index}',
+      'venue': 'Room ${201 + index}',
+      'date': '${index + 1 < 10 ? '0' : ''}${index + 1}-05-2025',
+      'time': '10:${index + 1}0 AM',
+    };
+  });
 
   @override
   Widget build(BuildContext context) {
     final currentDate = DateFormat('d MMMM, yyyy').format(DateTime.now());
+
+    // Get current user from Firebase Authentication
     User? currentUser = FirebaseAuth.instance.currentUser;
     String username = currentUser?.displayName ?? "Username";
-
-    final dummyExam = {
-      'subject': 'CSC 304 Linear Algebra',
-      'examType': 'Midterm',
-      'venue': 'CB2308',
-      'date': '22-10-2025',
-      'time': '10:00 AM',
-    };
 
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E2E),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  currentDate,
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                currentDate,
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(
+                    Icons.school,
+                    color: const Color(0xFFB388F5),
+                    size: 30,
+                  ),
+                  SizedBox(width: 8.0),
+                  Expanded(
+                    child: Text(
                       "Hey, $username !",
                       style: const TextStyle(
                         color: Color(0xFFB388F5),
@@ -45,56 +62,102 @@ class MainPage extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.logout, color: Color(0xFFB388F5)),
-                      onPressed: () => _showLogoutDialog(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    _buildCard(
-                        context, "Assignment", "16", "5", '/assignments'),
-                    const SizedBox(width: 12),
-                    _buildCard(context, "Study Planner", "10", "5", '/planner'),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                _sectionTitle(context, "Upcoming exams", '/exams'),
-                const SizedBox(height: 12),
-                
-                SizedBox(
-                  height: 180, // Adjust based on ExamCard height
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount:
-                        1, // Will be replaced with Firestore length later
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: SizedBox(
-                          width: 250, // Optional: keeps all cards same width
-                          child: ExamCard(
-                            examType: dummyExam['examType']!,
-                            subject: dummyExam['subject']!,
-                            venue: dummyExam['venue']!,
-                            date: dummyExam['date']!,
-                            time: dummyExam['time']!,
-                          ),
-                        ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.logout, color: Color(0xFFB388F5)),
+                    onPressed: () => _showLogoutDialog(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('assignments').where('creator',isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const CircularProgressIndicator();
+                      }
+
+                      final docs = snapshot.data!.docs;
+
+                      // Count completed and to-do (pending or overdue) assignments
+                      int completed = 0;
+                      int todo = 0;
+
+                      for (var doc in docs) {
+                        final data = doc.data();
+                        final String status = data['status'] ?? 'Pending';
+
+                        if (status == 'Completed') {
+                          completed++;
+                        } else {
+                          todo++;
+                        }
+                      }
+
+                      return _buildCard(
+                        context,
+                        "Assignment",
+                        completed.toString(),
+                        todo.toString(),
+                        '/assignments',
                       );
                     },
                   ),
+                  const SizedBox(width: 12),
+                  _buildCard(context, "Study Planner", "10", "5", '/planner'),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _sectionTitle(context, "Upcoming exams", '/exams'),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 150,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: exams.length,
+                  itemBuilder: (context, index) {
+                    final exam = exams[index];
+                    return ExamCard(
+                      examType: exam['examType']!,
+                      subject: exam['subject']!,
+                      venue: exam['venue']!,
+                      date: exam['date']!,
+                      time: exam['time']!,
+                      fromMainPage: true,
+                      onDelete: () {
+                        // Placeholder: Implement Firestore delete logic here.
+                        // Delete logic is handled in ExamCard
+                        setState(() {
+                          exams.removeAt(index);
+                        });
+                      },
+                    );
+                  },
                 ),
-
-                const SizedBox(height: 24),
-                _sectionTitle(context, "Class schedule", '/classSchedule'),
-                Column(
-                  children: List.generate(5, (index) => _classCard()),
-                )
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+              _sectionTitle(context, "Class schedule", '/classSchedule'),
+              Expanded(
+                flex: 5,
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  itemCount: 5,
+                  itemBuilder: (context, index) {
+                    return ScheduleCard(
+                      startTime: "8:00",
+                      endTime: "12:00",
+                      subject: "CSC 304 Linear Algebra",
+                      room: "CB2312",
+                      type: index % 2 == 0 ? "Online" : "Onsite",
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -119,6 +182,7 @@ class MainPage extends StatelessWidget {
           TextButton(
             child: const Text("Yes"),
             onPressed: () async {
+              // Sign out from Firebase Authentication
               await FirebaseAuth.instance.signOut();
               if (context.mounted) {
                 Navigator.of(context).pop();
@@ -141,12 +205,11 @@ class MainPage extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF2E2E48),
             borderRadius: BorderRadius.circular(12),
-            // border: Border.all(color: Color(0xFFB388F5), width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("$title",
+              Text(title,
                   style: const TextStyle(
                       color: Color(0xFFB388F5),
                       fontSize: 18,
@@ -197,72 +260,12 @@ class MainPage extends StatelessWidget {
           child: const Text(
             "View all >>",
             style: TextStyle(
-              color: Color(0xFFB388F5), // brighter or primary color
+              color: Color(0xFFB388F5),
               fontWeight: FontWeight.bold,
             ),
           ),
         )
       ],
-    );
-  }
-
-  // Widget _examCard() {
-  //   return Container(
-  //     height: 160,
-  //     margin: const EdgeInsets.symmetric(horizontal: 8),
-  //     padding: const EdgeInsets.all(16),
-  //     decoration: BoxDecoration(
-  //       color: const Color(0xFF2E2E48),
-  //       borderRadius: BorderRadius.circular(12),
-  //     ),
-  //     child: Column(
-  //       mainAxisAlignment: MainAxisAlignment.center,
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: const [
-  //         Text("CSC 304 Linear Algebra",
-  //             style:
-  //                 TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-  //         SizedBox(height: 4),
-  //         Text("Type: Midterm", style: TextStyle(color: Colors.white70)),
-  //         Text("Date: 22-10-2025", style: TextStyle(color: Colors.white70)),
-  //         Text("Venue: CB2308", style: TextStyle(color: Colors.white70)),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  Widget _classCard() {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2E2E48),
-        borderRadius: BorderRadius.circular(12),
-        // border: Border.all(color: Color(0xFFB388F5), width: 1),
-      ),
-      child: Row(
-        children: [
-          const SizedBox(
-            width: 60,
-            child: Text("8:00\n-\n12:00",
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white70)),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text("CSC 304 Linear Algebra",
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
-                Text("Classroom : CB2312",
-                    style: TextStyle(color: Colors.white70)),
-              ],
-            ),
-          )
-        ],
-      ),
     );
   }
 }

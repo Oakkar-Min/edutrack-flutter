@@ -62,9 +62,8 @@ class TaskCardStudy extends StatelessWidget {
                   width: 10,
                   height: 10,
                   decoration: BoxDecoration(
-                    color: isCompleted 
-                        ? Colors.greenAccent 
-                        : Colors.orangeAccent,
+                    color:
+                        isCompleted ? Colors.greenAccent : Colors.orangeAccent,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -72,9 +71,8 @@ class TaskCardStudy extends StatelessWidget {
                 Text(
                   isCompleted ? "Completed" : "Pending",
                   style: TextStyle(
-                    color: isCompleted 
-                        ? Colors.greenAccent 
-                        : Colors.orangeAccent,
+                    color:
+                        isCompleted ? Colors.greenAccent : Colors.orangeAccent,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

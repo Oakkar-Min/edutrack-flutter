@@ -72,10 +72,8 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     // Navigate to the login page
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-    );
+     Navigator.pushReplacementNamed(context, '/login');
+
   } on FirebaseAuthException catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Signup failed: ${e.message}")),

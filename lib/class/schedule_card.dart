@@ -8,12 +8,12 @@ class ScheduleCard extends StatelessWidget {
   final String type;
 
   const ScheduleCard({
-    Key? key,
     required this.startTime,
     required this.endTime,
     required this.subject,
     required this.room,
     required this.type,
+    Key? key,
   }) : super(key: key);
 
   Color getTypeColor(String type) {

@@ -43,7 +43,7 @@ class _ExamFormState extends State<ExamForm> {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white30,
+                  backgroundColor: const Color(0xFFB388F5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -68,12 +68,13 @@ class _ExamFormState extends State<ExamForm> {
     if(widget.buttonText == 'Save'){
 
     print("Save Clicked");
-    //  Navigator.pop(context); 
+     Navigator.pushNamed(context, '/exams') ;
     }else if(widget.buttonText == 'Add'){
 
       print("Add Clicked");
-      // Navigator.pop(context);
+      Navigator.pop(context);
     }
+   
    
   }
 

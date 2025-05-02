@@ -1,17 +1,22 @@
+import 'package:edu_track_project/assignment/add_assignment.dart';
 import 'package:edu_track_project/auth/splash_page.dart';
 import 'package:edu_track_project/exam/exams.dart';
-import 'package:edu_track_project/home/assignment.dart';
+import 'package:edu_track_project/assignment/assignment.dart';
+import 'package:edu_track_project/studyplanner/add_study.dart';
+// import 'package:edu_track_project/studyplanner/edit_study.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'auth/login_page.dart';
 import 'auth/register_page.dart';
 import 'home/main_page.dart';
-import 'home/study_planner.dart';
-import 'home/class_schedule.dart';
+import 'studyplanner/study_planner.dart';
+import 'class/class_schedule.dart';
 import 'package:edu_track_project/exam/add_exam_page.dart';
 import 'package:edu_track_project/exam/edit_exam_page.dart';
-import 'auth/auth_wrapper.dart';
+// import 'auth/auth_wrapper.dart';
+import 'package:edu_track_project/class/add_class.dart';
+import 'package:edu_track_project/class/edit_class.dart';
 
 
 void main() async {
@@ -49,8 +54,8 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const AuthWrapper(),
-        // '/': (context) => const SplashPage(),
+        // '/': (context) => const AuthWrapper(),
+        '/': (context) => const SplashPage(),
         '/splash': (context) => const SplashPage(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
@@ -61,6 +66,13 @@ class MyApp extends StatelessWidget {
         '/classSchedule': (context) => const ClassSchedulePage(), 
         '/add_exam': (context) => const AddExamPage(),
         '/edit_exam': (context) => const EditExamPage(),
+        '/add_class': (context) => const AddClassPage(),
+        '/edit_class': (context) => const EditClassPage(),
+        '/add_study': (context) => const AddTaskPage(),
+        // '/addAssignment': (context) => const AddAssignmentPage(),
+        // '/add_assignment': (context) => const AddAssignmentPage(),
+        
+        // '/edit_study': (context) => const EditTaskPage(),
       },
     );
   }
