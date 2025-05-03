@@ -1,3 +1,4 @@
+import 'package:edu_track_project/assignment/assignment_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -299,13 +300,23 @@ class _AssignmentTrackerPageState extends State<AssignmentTrackerPage> {
                             return false;
                           }
                         },
-                        child: TaskCard(
-                          title: assignment['title'],
-                          priority: assignment['priority'],
-                          date: assignment['date'],
-                          status: assignment['status'],
-                          link: assignment['link'],
-                          isOverdue: isOverdue,
+                        child: GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AssignmentDetailDialog(
+                                assignmentId: assignment['id'],
+                              ),
+                            );
+                          },
+                          child: TaskCard(
+                            title: assignment['title'],
+                            priority: assignment['priority'],
+                            date: assignment['date'],
+                            status: assignment['status'],
+                            link: assignment['link'],
+                            isOverdue: isOverdue,
+                          ),
                         ),
                       );
                     },

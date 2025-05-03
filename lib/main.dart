@@ -1,4 +1,5 @@
 import 'package:edu_track_project/assignment/add_assignment.dart';
+import 'package:edu_track_project/auth/auth_wrapper.dart';
 import 'package:edu_track_project/auth/splash_page.dart';
 import 'package:edu_track_project/exam/exams.dart';
 import 'package:edu_track_project/assignment/assignment.dart';
@@ -54,8 +55,8 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        // '/': (context) => const AuthWrapper(),
-        '/': (context) => const SplashPage(),
+        '/': (context) => const AuthWrapper(),
+        // '/': (context) => const SplashPage(),
         '/splash': (context) => const SplashPage(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
@@ -69,10 +70,7 @@ class MyApp extends StatelessWidget {
         '/add_class': (context) => const AddClassPage(),
         '/edit_class': (context) => const EditClassPage(),
         '/add_study': (context) => const AddTaskPage(),
-        // '/addAssignment': (context) => const AddAssignmentPage(),
         // '/add_assignment': (context) => const AddAssignmentPage(),
-        
-        // '/edit_study': (context) => const EditTaskPage(),
       },
     );
   }
