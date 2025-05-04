@@ -71,7 +71,7 @@ class _ClassSchedulePageState extends State<ClassSchedulePage> {
                   }
 
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
+                    return Center(child: const CircularProgressIndicator());
                   }
 
                   final classes = snapshot.data!.docs;
@@ -116,23 +116,13 @@ class _ClassSchedulePageState extends State<ClassSchedulePage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Wrap(
-                        // alignment: WrapAlignment.center,
-                        spacing: 8,
-                        runSpacing: 8,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _dayButton("Mon"),
-                          _dayButton("Tue"),
-                          _dayButton("Wed"),
-                          _dayButton("Thu"),
-                          _dayButton("Fri"),
-                          _dayButton("Sat"),
-                          _dayButton("Sun"),
-                          IconButton(
-                            icon: const Icon(Icons.add, color: Colors.white),
-                            onPressed: () =>
-                                Navigator.pushNamed(context, '/add_class'),
-                          ),
+                          ...["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+                              .map((day) => _dayButton(day))
+                              .toList(),
+                          _addButton(), // Plus button
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -200,19 +190,45 @@ class _ClassSchedulePageState extends State<ClassSchedulePage> {
 
   Widget _dayButton(String day) {
     final isSelected = day == selectedDay;
-    return InkWell(
-      onTap: () => setState(() => selectedDay = day),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFB388F5) : const Color(0xFF2E2E48),
-          borderRadius: BorderRadius.circular(8),
+
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => selectedDay = day),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          decoration: BoxDecoration(
+            color:
+                isSelected ? const Color(0xFFB388F5) : const Color(0xFF2E2E48),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Center(
+            child: Text(
+              day,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ),
         ),
-        child: Text(
-          day,
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+    );
+  }
+
+  Widget _addButton() {
+    return SizedBox(
+      width: 36,
+      height: 36,
+      child: IconButton(
+        icon: const Icon(Icons.add, size: 18, color: Colors.white),
+        padding: EdgeInsets.zero,
+        onPressed: () => Navigator.pushNamed(context, '/add_class'),
+        style: IconButton.styleFrom(
+          backgroundColor: const Color(0xFF2E2E48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(6),
           ),
         ),
       ),

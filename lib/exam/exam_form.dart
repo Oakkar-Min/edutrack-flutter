@@ -1,8 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ExamForm extends StatefulWidget {
   final String buttonText;
-  const ExamForm({super.key, required this.buttonText});
+  final String? examId;
+
+  const ExamForm({super.key, required this.buttonText, this.examId});
 
   @override
   State<ExamForm> createState() {
@@ -11,12 +16,12 @@ class ExamForm extends StatefulWidget {
 }
 
 class _ExamFormState extends State<ExamForm> {
-  final TextEditingController _nameController = TextEditingController(text: 'CSC 304 Linear Algebra');
-  final TextEditingController _dateController = TextEditingController(text: '12-2-2025');
-  final TextEditingController _timeController = TextEditingController(text: '01:30 AM');
-  final TextEditingController _venueController = TextEditingController(text: 'CB2308');
-  final TextEditingController _descriptionController = TextEditingController(text: 'Chapter 1...\nSome graph...\nChapter 3 calculation 3...');
-  
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _startTimeController = TextEditingController();
+  final TextEditingController _endTimeController = TextEditingController();
+  final TextEditingController _venueController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
   String selectedType = 'Module1';
 
   @override
@@ -32,11 +37,14 @@ class _ExamFormState extends State<ExamForm> {
             const SizedBox(height: 16),
             _buildDatePickerField('Date', _dateController),
             const SizedBox(height: 16),
-            _buildTimePickerField('Time', _timeController),
+            _buildTimePickerField('Start Time', _startTimeController),
+            const SizedBox(height: 16),
+            _buildTimePickerField('End Time', _endTimeController),
             const SizedBox(height: 16),
             _buildTextField('Venue', _venueController),
             const SizedBox(height: 16),
-            _buildTextField('Description (Optional)', _descriptionController, maxLines: 5),
+            _buildTextField('Description (Optional)', _descriptionController,
+                maxLines: 5),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
@@ -48,13 +56,10 @@ class _ExamFormState extends State<ExamForm> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onPressed: () {
-                   _handleSubmit();
-                },
+                onPressed: _handleSubmit,
                 child: Text(
-                  
                   widget.buttonText,
-                  style: const TextStyle(fontSize: 18,color: Colors.white),
+                  style: const TextStyle(fontSize: 18, color: Colors.white),
                 ),
               ),
             ),
@@ -64,24 +69,103 @@ class _ExamFormState extends State<ExamForm> {
     );
   }
 
-  void _handleSubmit() {
-    if(widget.buttonText == 'Save'){
-
-    print("Save Clicked");
-     Navigator.pushNamed(context, '/exams') ;
-    }else if(widget.buttonText == 'Add'){
-
-      print("Add Clicked");
-      Navigator.pop(context);
-    }
-   
-   
+  TimeOfDay parseTimeOfDay(String timeString) {
+    final dateFormat = DateFormat.jm();
+    final dateTime = dateFormat.parse(timeString);
+    return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
   }
 
+  Future<void> _handleSubmit() async {
+    final name = _nameController.text.trim();
+    final venue = _venueController.text.trim();
+    final description = _descriptionController.text.trim();
+    final dateText = _dateController.text.trim();
+    final startTimeText = _startTimeController.text.trim();
+    final endTimeText = _endTimeController.text.trim();
 
-  
+    if (name.isEmpty ||
+        venue.isEmpty ||
+        dateText.isEmpty ||
+        startTimeText.isEmpty ||
+        endTimeText.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("All fields except description are required.")));
+      return;
+    }
 
-  Widget _buildTextField(String label, TextEditingController controller, {int maxLines = 1}) {
+    try {
+      final start = parseTimeOfDay(startTimeText);
+      final end = parseTimeOfDay(endTimeText);
+
+      final dateParts = dateText.split("-");
+      final examDate = DateTime(int.parse(dateParts[2]),
+          int.parse(dateParts[1]), int.parse(dateParts[0]));
+
+      final startDateTime = DateTime(examDate.year, examDate.month,
+          examDate.day, start.hour, start.minute);
+      final endDateTime = DateTime(
+          examDate.year, examDate.month, examDate.day, end.hour, end.minute);
+
+      if (endDateTime.isBefore(startDateTime)) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("End time cannot be before start time.")));
+        return;
+      }
+
+      // Check for time conflicts
+      final query = await FirebaseFirestore.instance
+          .collection('exams')
+          .where('creator', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .where('examDate', isEqualTo: Timestamp.fromDate(examDate))
+          .get();
+
+      for (var doc in query.docs) {
+        if (widget.examId != null && doc.id == widget.examId) continue;
+
+        final docStart = (doc['startTime'] as Timestamp).toDate();
+        final docEnd = (doc['endTime'] as Timestamp).toDate();
+
+        if (startDateTime.isBefore(docEnd) && endDateTime.isAfter(docStart)) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("Time conflict with another exam: ${doc['name']}"),
+          ));
+          return;
+        }
+      }
+
+      final examData = {
+        'creator': FirebaseAuth.instance.currentUser!.uid,
+        'name': name,
+        'type': selectedType,
+        'venue': venue,
+        'description': description,
+        'examDate': Timestamp.fromDate(examDate),
+        'startTime': Timestamp.fromDate(startDateTime),
+        'endTime': Timestamp.fromDate(endDateTime),
+      };
+
+      if (widget.buttonText == 'Save' && widget.examId != null) {
+        await FirebaseFirestore.instance
+            .collection('exams')
+            .doc(widget.examId)
+            .update(examData);
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Exam updated successfully.")));
+        Navigator.pop(context);
+      } else {
+        await FirebaseFirestore.instance.collection('exams').add(examData);
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Exam added successfully.")));
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller,
+      {int maxLines = 1}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -92,6 +176,8 @@ class _ExamFormState extends State<ExamForm> {
           maxLines: maxLines,
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
+            hintText: 'Enter $label',
+            hintStyle: const TextStyle(color: Colors.grey),
             filled: true,
             fillColor: const Color(0xFF2E2E48),
             border: OutlineInputBorder(
@@ -121,18 +207,21 @@ class _ExamFormState extends State<ExamForm> {
           onTap: () async {
             DateTime? pickedDate = await showDatePicker(
               context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(2020),
+              initialDate: DateTime.now().add(const Duration(days: 1)),
+              firstDate: DateTime.now().add(const Duration(days: 1)),
               lastDate: DateTime(2030),
             );
             if (pickedDate != null) {
-              String formattedDate = "${pickedDate.day}-${pickedDate.month}-${pickedDate.year}";
+              String formattedDate =
+                  "${pickedDate.day}-${pickedDate.month}-${pickedDate.year}";
               setState(() {
                 controller.text = formattedDate;
               });
             }
           },
           decoration: InputDecoration(
+            hintText: 'Select $label',
+            hintStyle: const TextStyle(color: Colors.grey),
             filled: true,
             fillColor: const Color(0xFF2E2E48),
             border: OutlineInputBorder(
@@ -166,14 +255,17 @@ class _ExamFormState extends State<ExamForm> {
             );
             if (pickedTime != null) {
               final now = DateTime.now();
-              final dt = DateTime(now.year, now.month, now.day, pickedTime.hour, pickedTime.minute);
-              String formattedTime = TimeOfDay.fromDateTime(dt).format(context);
+              final dt = DateTime(now.year, now.month, now.day, pickedTime.hour,
+                  pickedTime.minute);
+              String formattedTime = DateFormat.jm().format(dt);
               setState(() {
                 controller.text = formattedTime;
               });
             }
           },
           decoration: InputDecoration(
+            hintText: 'Pick $label',
+            hintStyle: const TextStyle(color: Colors.grey),
             filled: true,
             fillColor: const Color(0xFF2E2E48),
             border: OutlineInputBorder(
@@ -214,9 +306,15 @@ class _ExamFormState extends State<ExamForm> {
           ),
           iconEnabledColor: Colors.white,
           items: const [
-            DropdownMenuItem(value: 'Module1', child: Text('Module 1', style: TextStyle(color: Colors.white))),
-            DropdownMenuItem(value: 'Module2', child: Text('Module 2', style: TextStyle(color: Colors.white))),
-            DropdownMenuItem(value: 'Module3', child: Text('Module 3', style: TextStyle(color: Colors.white))),
+            DropdownMenuItem(
+                value: 'Module1',
+                child: Text('Module 1', style: TextStyle(color: Colors.white))),
+            DropdownMenuItem(
+                value: 'Module2',
+                child: Text('Module 2', style: TextStyle(color: Colors.white))),
+            DropdownMenuItem(
+                value: 'Module3',
+                child: Text('Module 3', style: TextStyle(color: Colors.white))),
           ],
           onChanged: (value) {
             setState(() {

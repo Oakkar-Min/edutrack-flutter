@@ -1,76 +1,99 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'exam_card.dart';
 
-class ExamPage extends StatefulWidget {
+class ExamPage extends StatelessWidget {
   const ExamPage({super.key});
 
   @override
-  State<ExamPage> createState() => _ExamPageState();
-}
-
-class _ExamPageState extends State<ExamPage> {
-  final List<Map<String, String>> _examList = List.generate(5, (index) {
-    return {
-      'examType': index % 2 == 0 ? 'Module1' : 'Module2',
-      'subject': 'CSC 304 Linear Algebra',
-      'venue': 'CB2312',
-      'date': '20-2-2025',
-      'time': '13:30',
-    };
-  });
-
-  @override
   Widget build(BuildContext context) {
+    final String userId = FirebaseAuth.instance.currentUser!.uid;
+
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E2E),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Exam Tracker', style: TextStyle(color: Color(0xFFB388F5))),
+        title: const Text('Exam Tracker',
+            style: TextStyle(color: Color(0xFFB388F5))),
         centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Summary Box
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Container(
+            
+               Container(
+                margin: EdgeInsetsDirectional.symmetric(horizontal: 19),
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2E2E48),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Exam Details",
-                      style: TextStyle(
-                        color: Color(0xFFB388F5),
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      "You have 8 upcoming exams.\nClosest exam date: 6-10-2025",
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
+                  color: const Color(0xFF3A3A5A),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                      color: const Color(0xFFB388F5).withOpacity(0.2)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('exams')
+                      .where('creator', isEqualTo: userId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    final count = snapshot.hasData
+                        ? _getUpcomingExamCount(snapshot.data!.docs)
+                        : 0;
+
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFB388F5).withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.assignment,
+                              color: Color(0xFFB388F5), size: 28),
+                        ),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Upcoming Exams",
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              "$count",
+                              style: const TextStyle(
+                                color: Color(0xFFB388F5),
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
-            ),
+           
 
             // Section Title + Add Button
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               child: Row(
                 children: [
                   const Expanded(
@@ -93,106 +116,111 @@ class _ExamPageState extends State<ExamPage> {
               ),
             ),
 
-            // List of Exams with Dismissible Logic
+            // Live Firestore Exam List
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(bottom: 16),
-                itemCount: _examList.length,
-                itemBuilder: (context, index) {
-                  final exam = _examList[index];
-
-                  return Dismissible(
-                     key: UniqueKey(),
-                    direction: DismissDirection.horizontal,
-                    background: _buildSwipeBackground(isEdit: true),
-                    secondaryBackground: _buildSwipeBackground(isEdit: false),
-                    confirmDismiss: (direction) async {
-                      if (direction == DismissDirection.startToEnd) {
-                        // Edit
-                        Navigator.pushNamed(
-                          context,
-                          '/edit_exam',
-                          arguments: exam,
-                        );
-                        return false;
-                      } else if (direction == DismissDirection.endToStart) {
-                        // Delete
-                        return await _showDeleteConfirmation(context, exam['subject'] ?? '');
-                      }
-                      return false;
-                    },
-                    onDismissed: (direction) {
-                      setState(() {
-                        _examList.removeAt(index);
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Exam deleted')),
-                      );
-                    },
-                    child: ExamCard(
-                      examType: exam['examType']!,
-                      subject: exam['subject']!,
-                      venue: exam['venue']!,
-                      date: exam['date']!,
-                      time: exam['time']!,
-                      fromMainPage: false,
-                    ),
-                  );
-                },
-              ),
+              child: _buildExamList(userId),
             ),
-
-            
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSwipeBackground({required bool isEdit}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isEdit
-            ? const Color.fromARGB(255, 20, 86, 161)
-            : const Color.fromARGB(255, 141, 29, 21),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      alignment: isEdit ? Alignment.centerLeft : Alignment.centerRight,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Icon(
-        isEdit ? Icons.edit : Icons.delete,
-        color: Colors.white,
-        size: 30,
-      ),
-    );
+  int _getUpcomingExamCount(List<DocumentSnapshot> docs) {
+    return docs.where((exam) {
+      final startTime = (exam['startTime'] as Timestamp).toDate();
+      return startTime.isAfter(DateTime.now());
+    }).length;
   }
 
-  Future<bool> _showDeleteConfirmation(BuildContext context, String subject) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: const Color(0xFF2E2E48),
-            title: const Text(
-              "Delete Exam",
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-            ),
-            content: Text(
-              "Are you sure you want to delete the exam for $subject?",
-              style: const TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                child: const Text("Cancel", style: TextStyle(color: Colors.deepPurpleAccent)),
-                onPressed: () => Navigator.of(context).pop(false),
-              ),
-              TextButton(
-                child: const Text("Delete", style: TextStyle(color: Color.fromARGB(255, 231, 39, 39))),
-                onPressed: () => Navigator.of(context).pop(true),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+  Widget _buildExamList(String userId) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('exams')
+          .where('creator', isEqualTo: userId)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData) {
+          return const Center(
+            child: Text("No upcoming exams.",
+                style: TextStyle(color: Colors.white70)),
+          );
+        }
+
+        List<DocumentSnapshot> exams = snapshot.data!.docs;
+
+        List<DocumentSnapshot> filteredExams = exams.where((exam) {
+          DateTime startTime = (exam['startTime'] as Timestamp).toDate();
+          return startTime.isAfter(DateTime.now());
+        }).toList();
+
+        filteredExams.sort((a, b) {
+          DateTime dateA = (a['examDate'] as Timestamp).toDate();
+          DateTime dateB = (b['examDate'] as Timestamp).toDate();
+          int dateComparison = dateA.compareTo(dateB);
+          if (dateComparison != 0) return dateComparison;
+
+          DateTime startA = (a['startTime'] as Timestamp).toDate();
+          DateTime startB = (b['startTime'] as Timestamp).toDate();
+          return startA.compareTo(startB);
+        });
+
+        if (filteredExams.isEmpty) {
+          return const Center(
+            child: Text("No upcoming exams",
+                style: TextStyle(color: Colors.white70)),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: filteredExams.length,
+          itemBuilder: (context, index) {
+            final exam = filteredExams[index];
+            final data = exam.data() as Map<String, dynamic>;
+
+            return ExamCard(
+              examId: exam.id,
+              examType: data['type'] ?? '',
+              subject: data['name'] ?? '',
+              venue: data['venue'] ?? '',
+              date: (data['examDate'] as Timestamp?)
+                      ?.toDate()
+                      .toLocal()
+                      .toString()
+                      .split(' ')
+                      .first ??
+                  '',
+              startTime: (data['startTime'] as Timestamp?)
+                      ?.toDate()
+                      .toLocal()
+                      .toString()
+                      .split(' ')
+                      .last
+                      .substring(0, 5) ??
+                  '',
+              endTime: (data['endTime'] as Timestamp?)
+                      ?.toDate()
+                      .toLocal()
+                      .toString()
+                      .split(' ')
+                      .last
+                      .substring(0, 5) ??
+                  '',
+              description: data['description'] ?? '',
+              onDelete: () async {
+                await FirebaseFirestore.instance
+                    .collection('exams')
+                    .doc(exam.id)
+                    .delete();
+              },
+            );
+          },
+        );
+      },
+    );
   }
 }

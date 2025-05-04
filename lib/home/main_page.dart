@@ -174,31 +174,31 @@ class _MainPageState extends State<MainPage> {
               const SizedBox(height: 24),
               _sectionTitle(context, "Upcoming exams", '/exams'),
               const SizedBox(height: 12),
-              SizedBox(
-                height: 150,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: exams.length,
-                  itemBuilder: (context, index) {
-                    final exam = exams[index];
-                    return ExamCard(
-                      examType: exam['examType']!,
-                      subject: exam['subject']!,
-                      venue: exam['venue']!,
-                      date: exam['date']!,
-                      time: exam['time']!,
-                      fromMainPage: true,
-                      onDelete: () {
-                        // Placeholder: Implement Firestore delete logic here.
-                        // Delete logic is handled in ExamCard
-                        setState(() {
-                          exams.removeAt(index);
-                        });
-                      },
-                    );
-                  },
-                ),
-              ),
+              // SizedBox(
+              //   height: 150,
+              //   child: ListView.builder(
+              //     scrollDirection: Axis.horizontal,
+              //     itemCount: exams.length,
+              //     itemBuilder: (context, index) {
+              //       final exam = exams[index];
+              //       return ExamCard(
+              //         examType: exam['examType']!,
+              //         subject: exam['subject']!,
+              //         venue: exam['venue']!,
+              //         date: exam['date']!,
+              //         time: exam['time']!,
+              //         fromMainPage: true,
+              //         onDelete: () {
+              //           // Placeholder: Implement Firestore delete logic here.
+              //           // Delete logic is handled in ExamCard
+              //           setState(() {
+              //             exams.removeAt(index);
+              //           });
+              //         },
+              //       );
+              //     },
+              //   ),
+              // ),
               const SizedBox(height: 24),
               _sectionTitle(context, "Class schedule", '/classSchedule'),
               Expanded(
