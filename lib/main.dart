@@ -68,7 +68,7 @@ class MyApp extends StatelessWidget {
         '/add_exam': (context) => const AddExamPage(),
         '/edit_exam': (context) => const EditExamPage(),
         '/add_class': (context) => const AddClassPage(),
-        '/edit_class': (context) => const EditClassPage(),
+       '/edit_class': (context) => const EditClassPage(),
         '/add_study': (context) => const AddTaskPage(),
         // '/add_assignment': (context) => const AddAssignmentPage(),
       },

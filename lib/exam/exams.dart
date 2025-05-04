@@ -57,7 +57,7 @@ class _ExamPageState extends State<ExamPage> {
                     ),
                     SizedBox(height: 12),
                     Text(
-                      "You have 8 upcoming exams.\nClosest exam date: 6-10-2025\nFurthest exam date: 25-12-2025",
+                      "You have 8 upcoming exams.\nClosest exam date: 6-10-2025",
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 14,

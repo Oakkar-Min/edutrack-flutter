@@ -23,6 +23,28 @@ class _MainPageState extends State<MainPage> {
     };
   });
 
+  String _formatTime(int minutes) {
+    final hour = minutes ~/ 60;
+    final minute = minutes % 60;
+    final time = TimeOfDay(hour: hour, minute: minute);
+    return time.format(
+        context); // Uses context for localization (AM/PM or 24-hour format)
+  }
+
+  String getFirestoreDay() {
+  final now = DateTime.now();
+  switch (now.weekday) {
+    case 1: return 'Mon';
+    case 2: return 'Tue';
+    case 3: return 'Wed';
+    case 4: return 'Thu';
+    case 5: return 'Fri';
+    case 6: return 'Sat';
+    case 7: return 'Sun';
+    default: return 'Mon'; // Fallback
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     final currentDate = DateFormat('d MMMM, yyyy').format(DateTime.now());
@@ -74,7 +96,9 @@ class _MainPageState extends State<MainPage> {
                 children: [
                   StreamBuilder(
                     stream: FirebaseFirestore.instance
-                        .collection('assignments').where('creator',isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                        .collection('assignments')
+                        .where('creator',
+                            isEqualTo: FirebaseAuth.instance.currentUser!.uid)
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
@@ -108,9 +132,11 @@ class _MainPageState extends State<MainPage> {
                     },
                   ),
                   const SizedBox(width: 12),
-                 StreamBuilder(
+                  StreamBuilder(
                     stream: FirebaseFirestore.instance
-                        .collection('studyTasks').where('creator',isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                        .collection('studyTasks')
+                        .where('creator',
+                            isEqualTo: FirebaseAuth.instance.currentUser!.uid)
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
@@ -176,20 +202,53 @@ class _MainPageState extends State<MainPage> {
               const SizedBox(height: 24),
               _sectionTitle(context, "Class schedule", '/classSchedule'),
               Expanded(
-                flex: 5,
-                child: ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  itemCount: 5,
-                  itemBuilder: (context, index) {
-                    return ScheduleCard(
-                      startTime: "8:00",
-                      endTime: "12:00",
-                      subject: "CSC 304 Linear Algebra",
-                      room: "CB2312",
-                      type: index % 2 == 0 ? "Online" : "Onsite",
-                    );
-                  },
-                ),
+                child: StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('classes')
+                        .where('day',
+                            isEqualTo:
+                                getFirestoreDay())
+                        .where('creator',
+                            isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                       
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      }
+
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Center(
+                            child: Text('No classes today!',
+                                style: TextStyle(color: Colors.white70)));
+                      }
+                      final classes = snapshot.data!.docs;
+                      final sortedClasses = classes.toList()
+                    ..sort((a, b) {
+                      final aTime = (a.data()
+                          as Map<String, dynamic>)['startTime'] as int;
+                      final bTime = (b.data()
+                          as Map<String, dynamic>)['startTime'] as int;
+                      return aTime.compareTo(bTime);
+                    });
+                      return ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        itemCount: sortedClasses.length,
+                        itemBuilder: (context, index) {
+                          final aClass = sortedClasses[index].data() as Map<String,dynamic>;
+                          
+                          return ScheduleCard(
+                            startTime: _formatTime(aClass['startTime']), 
+                            endTime: _formatTime(aClass['endTime']), 
+                            subject: aClass['name'], 
+                            room: aClass['classroom'], 
+                            type: aClass['type']) ;  
+                        },
+                      );
+                    }),
               ),
             ],
           ),
@@ -258,7 +317,7 @@ class _MainPageState extends State<MainPage> {
                           color: Colors.white,
                           fontWeight: FontWeight.bold)),
                   const Text("Completed",
-                      style: TextStyle(color: Colors.white70,fontSize: 18)),
+                      style: TextStyle(color: Colors.white70, fontSize: 18)),
                 ],
               ),
               const SizedBox(height: 4),
@@ -270,7 +329,8 @@ class _MainPageState extends State<MainPage> {
                           fontSize: 18,
                           color: Colors.white,
                           fontWeight: FontWeight.bold)),
-                  const Text("To Do", style: TextStyle(color: Colors.white70,fontSize:18 )),
+                  const Text("To Do",
+                      style: TextStyle(color: Colors.white70, fontSize: 18)),
                 ],
               ),
             ],

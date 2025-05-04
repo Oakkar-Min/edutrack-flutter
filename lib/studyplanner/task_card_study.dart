@@ -1,41 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-class StudyTaskList extends StatelessWidget {
-  const StudyTaskList({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('studyTasks')
-          .orderBy('createdAt', descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Center(child: Text("Error loading tasks", style: TextStyle(color: Colors.white)));
-        }
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final tasks = snapshot.data!.docs;
-
-        return ListView.builder(
-          itemCount: tasks.length,
-          itemBuilder: (context, index) {
-            final task = tasks[index];
-            return TaskCardStudy(
-              title: task['title'],
-              creationDate: (task['createdAt'] as Timestamp).toDate().toString().split(' ')[0],
-              isCompleted: task['status'] == 'Completed',
-            );
-          },
-        );
-      },
-    );
-  }
-}
 
 class TaskCardStudy extends StatelessWidget {
   final String title;
@@ -71,9 +34,9 @@ class TaskCardStudy extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                Text(
+                const Text(
                   "Created: ",
-                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
                 ),
                 const Icon(Icons.calendar_today, size: 14, color: Colors.white70),
                 const SizedBox(width: 6),

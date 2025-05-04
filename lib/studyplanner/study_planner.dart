@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:edu_track_project/studyplanner/study_detail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:edu_track_project/studyplanner/task_card_study.dart';
@@ -29,11 +30,13 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('studyTasks')
-            .where('creator',isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+            .where('creator', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text("Error loading tasks", style: TextStyle(color: Colors.white)));
+            return const Center(
+                child: Text("Error loading tasks",
+                    style: TextStyle(color: Colors.white)));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -41,6 +44,12 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
           }
 
           final allTasks = snapshot.data!.docs;
+          allTasks.sort((a, b) {
+            Timestamp timestampA = a['createdAt'];
+            Timestamp timestampB = b['createdAt'];
+            return timestampB
+                .compareTo(timestampA); // Sorting in descending order
+          });
 
           final filteredTasks = allTasks.where((task) {
             final status = task['status'];
@@ -50,8 +59,10 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
           }).toList();
 
           final totalTasks = allTasks.length;
-          final completedCount = allTasks.where((t) => t['status'] == 'Completed').length;
-          final pendingCount = allTasks.where((t) => t['status'] == 'Pending').length;
+          final completedCount =
+              allTasks.where((t) => t['status'] == 'Completed').length;
+          final pendingCount =
+              allTasks.where((t) => t['status'] == 'Pending').length;
           final progress = totalTasks == 0 ? 0.0 : completedCount / totalTasks;
           final progressPercent = (progress * 100).toStringAsFixed(0);
 
@@ -60,7 +71,8 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
             child: Column(
               children: [
                 // Progress summary
-                _buildProgressCard(progress, progressPercent, pendingCount, completedCount),
+                _buildProgressCard(
+                    progress, progressPercent, pendingCount, completedCount),
 
                 const SizedBox(height: 24),
 
@@ -76,7 +88,8 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
                         ),
                       ),
                     ),
-                    Text("Showing: $currentFilter", style: const TextStyle(color: Colors.white70)),
+                    Text("Showing: $currentFilter",
+                        style: const TextStyle(color: Colors.white70)),
                     IconButton(
                       icon: const Icon(Icons.filter_list, color: Colors.white),
                       onPressed: _showFilterSheet,
@@ -103,7 +116,8 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
                       final title = task['title'];
                       final status = task['status'];
                       final date = (task['createdAt'] as Timestamp).toDate();
-                      final dateFormatted = "${date.day}-${date.month}-${date.year}";
+                      final dateFormatted =
+                          "${date.day}-${date.month}-${date.year}";
 
                       return Dismissible(
                         key: Key(docId),
@@ -111,7 +125,8 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
                           alignment: Alignment.centerLeft,
                           padding: const EdgeInsets.only(left: 20),
                           color: const Color.fromARGB(255, 25, 141, 85),
-                          child: const Icon(Icons.check_circle, color: Colors.white),
+                          child: const Icon(Icons.check_circle,
+                              color: Colors.white),
                         ),
                         secondaryBackground: Container(
                           alignment: Alignment.centerRight,
@@ -129,7 +144,8 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
                             }
                             return false;
                           } else if (direction == DismissDirection.endToStart) {
-                            final confirm = await _showDeleteConfirmation(context);
+                            final confirm =
+                                await _showDeleteConfirmation(context);
                             if (confirm == true) {
                               await FirebaseFirestore.instance
                                   .collection('studyTasks')
@@ -140,10 +156,18 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
                           }
                           return false;
                         },
-                        child: TaskCardStudy(
-                          title: title,
-                          creationDate: dateFormatted,
-                          isCompleted: status == 'Completed',
+                        child: GestureDetector(
+                          onTap: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) =>
+                                    StudyTaskDetailPopup(taskId: docId));
+                          },
+                          child: TaskCardStudy(
+                            title: title,
+                            creationDate: dateFormatted,
+                            isCompleted: status == 'Completed',
+                          ),
                         ),
                       );
                     },
@@ -157,7 +181,8 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
     );
   }
 
-  Widget _buildProgressCard(double progress, String percent, int pending, int completed) {
+  Widget _buildProgressCard(
+      double progress, String percent, int pending, int completed) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -167,7 +192,8 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Study Progress", style: TextStyle(color: Colors.white, fontSize: 16)),
+          const Text("Study Progress",
+              style: TextStyle(color: Colors.white, fontSize: 16)),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -192,8 +218,12 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Text("Pending\n$pending", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white)),
-                Text("Completed\n$completed", textAlign: TextAlign.center, style: const TextStyle(color: Colors.white)),
+                Text("Pending\n$pending",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white)),
+                Text("Completed\n$completed",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white)),
               ],
             ),
           ),
@@ -239,10 +269,12 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2E2E48),
         title: const Text("Delete Task", style: TextStyle(color: Colors.white)),
-        content: const Text("Are you sure you want to delete this task?", style: TextStyle(color: Colors.white70)),
+        content: const Text("Are you sure you want to delete this task?",
+            style: TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
-            child: const Text("Cancel", style: TextStyle(color: Color(0xFFB388F5))),
+            child: const Text("Cancel",
+                style: TextStyle(color: Color(0xFFB388F5))),
             onPressed: () => Navigator.of(context).pop(false),
           ),
           TextButton(

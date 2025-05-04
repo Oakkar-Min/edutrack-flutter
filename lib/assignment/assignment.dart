@@ -280,7 +280,7 @@ class _AssignmentTrackerPageState extends State<AssignmentTrackerPage> {
                                 actions: [
                                   TextButton(
                                     child: const Text("Cancel",
-                                        style: TextStyle(color: Colors.grey)),
+                                        style: TextStyle(color: Color(0xFFB388F5))),
                                     onPressed: () =>
                                         Navigator.of(context).pop(false),
                                   ),

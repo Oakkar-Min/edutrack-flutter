@@ -1,52 +1,46 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:edu_track_project/assignment/edit_assignment.dart';
+import 'package:edu_track_project/studyplanner/edit_study.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-class AssignmentDetailDialog extends StatelessWidget {
-  final String assignmentId;
+class StudyTaskDetailPopup extends StatelessWidget {
+  final String taskId;
 
-  const AssignmentDetailDialog({super.key, required this.assignmentId});
+  const StudyTaskDetailPopup({Key? key, required this.taskId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance
-          .collection('assignments')
-          .doc(assignmentId)
-          .get(),
+      future: FirebaseFirestore.instance.collection('studyTasks').doc(taskId).get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
+
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return const AlertDialog(
             backgroundColor: Color(0xFF2E2E48),
             title: Text('Error', style: TextStyle(color: Colors.white)),
-            content: Text('Assignment not found',
-                style: TextStyle(color: Colors.white70)),
+            content: Text('Task not found', style: TextStyle(color: Colors.white70)),
           );
         }
 
-        final data = snapshot.data!;
-        final dueDate = (data['dueDate'] as Timestamp).toDate();
-        final priority = data['priority'];
-        final status = data['status'];
-        final description = data['description'];
-        final isOverdue =
-            DateTime.now().isAfter(dueDate) && status != "Completed";
+        final task = snapshot.data!;
+        final title = task['title'];
+        final status = task['status'];
+        final description = task['description'] ?? '';
+        final createdAt = (task['createdAt'] as Timestamp).toDate();
+        final createdAtFormatted = "${createdAt.day}-${createdAt.month}-${createdAt.year}";
 
         return AlertDialog(
           backgroundColor: const Color(0xFF2E2E48),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    "Assignment Details",
+                    "Task Details",
                     style: TextStyle(color: Color(0xFFB388F5), fontSize: 20),
                   ),
                   IconButton(
@@ -56,10 +50,7 @@ class AssignmentDetailDialog extends StatelessWidget {
                   ),
                 ],
               ),
-              const Divider(
-                color: Color(0xFFB388F5),
-                thickness: 2,
-              ),
+              const Divider(color: Color(0xFFB388F5), thickness: 2),
             ],
           ),
           content: Column(
@@ -67,42 +58,24 @@ class AssignmentDetailDialog extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                data['title'],
+                title,
                 style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              _detailText("Priority : ", priority,
-                  color: priority == "High"
-                      ? Colors.red
-                      : priority == "Medium"
-                          ? Colors.orange
-                          : Colors.green),
-              _detailText(
-                  "Due-date : ", DateFormat('dd-MM-yyyy').format(dueDate)),
-              if ((data['link'] as String).isNotEmpty)
-                _detailText("Link : ", data['link'],
-                    color: const Color(0xFF80CBC4)),
-              _detailText(
-                "Status : ",
-                isOverdue ? "Overdue" : status,
-                color: isOverdue
-                    ? Colors.red
-                    : status == "Completed"
-                        ? Colors.green
-                        : Colors.orangeAccent,
-              ),
+              _detailText("Creation Date : ", createdAtFormatted),
+              _detailText("Status : ", status,
+                  color: status == 'Completed' ? Colors.green : Colors.orange),
               const SizedBox(height: 12),
               const Text(
                 "Description : ",
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               Text(
-                description,
+                description.isNotEmpty ? description : "No description provided.",
                 style: const TextStyle(color: Colors.white70),
               ),
             ],
@@ -121,17 +94,14 @@ class AssignmentDetailDialog extends StatelessWidget {
                         backgroundColor: const Color(0xFFB388F5),
                       ),
                       onPressed: () {
-                        Navigator.pop(context); // Close the dialog first
+                        Navigator.pop(context);
                         Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditAssignmentPage(
-                              assignmentId: assignmentId,
-                              assignmentData:
-                                  data.data() as Map<String, dynamic>,
-                            ),
-                          ),
-                        );
+  context,
+  MaterialPageRoute(
+    builder: (context) => EditTaskPage(taskId: taskId),
+  ),
+);
+
                       },
                       child: const Text(
                         "Edit",
@@ -148,42 +118,28 @@ class AssignmentDetailDialog extends StatelessWidget {
                         backgroundColor: const Color(0xFFB388F5),
                       ),
                       onPressed: () async {
-                        // Show confirmation dialog
                         final confirm = await showDialog<bool>(
                           context: context,
-                          builder: (context) => AlertDialog(
+                          builder: (_) => AlertDialog(
                             backgroundColor: const Color(0xFF2E2E48),
-                            title: const Text("Delete Assignment",
-                                style: TextStyle(color: Colors.white)),
-                            content: const Text(
-                              "Are you sure you want to delete this assignment?",
-                              style: TextStyle(color: Colors.white70),
-                            ),
+                            title: const Text("Delete Task", style: TextStyle(color: Colors.white)),
+                            content: const Text("Are you sure you want to delete this task?", style: TextStyle(color: Colors.white70)),
                             actions: [
                               TextButton(
-                                child: const Text("Cancel",
-                                    style: TextStyle(color: Color(0xFFB388F5))),
-                                onPressed: () =>
-                                    Navigator.of(context).pop(false),
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text("Cancel", style: TextStyle(color: Color(0xFFB388F5))),
                               ),
                               TextButton(
-                                child: const Text("Delete",
-                                    style: TextStyle(color: Colors.red)),
-                                onPressed: () =>
-                                    Navigator.of(context).pop(true),
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text("Delete", style: TextStyle(color: Colors.red)),
                               ),
                             ],
                           ),
                         );
 
-                        // If confirmed, delete the assignment
                         if (confirm == true) {
-                          await FirebaseFirestore.instance
-                              .collection('assignments')
-                              .doc(assignmentId)
-                              .delete();
-                          Navigator.of(context)
-                              .pop(); // Close the detail dialog after deletion
+                          await FirebaseFirestore.instance.collection('studyTasks').doc(taskId).delete();
+                          Navigator.pop(context);
                         }
                       },
                       child: const Text(

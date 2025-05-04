@@ -54,21 +54,30 @@ class ScheduleCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                Text(
-                  "Classroom: $room",
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                Expanded(
+                  child: Text(
+                    "Room: $room",
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
                 ),
-                const SizedBox(width: 16),
-                Text(
-                  "Type: ",
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-                Text(
-                  type,
-                  style: TextStyle(
-                    color: getTypeColor(type),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: getTypeColor(type).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: getTypeColor(type),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    type.toUpperCase(),
+                    style: TextStyle(
+                      color: getTypeColor(type),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               ],
