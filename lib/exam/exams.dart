@@ -23,73 +23,71 @@ class ExamPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            
-               Container(
-                margin: EdgeInsetsDirectional.symmetric(horizontal: 19),
-                width: double.infinity,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3A3A5A),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                      color: const Color(0xFFB388F5).withOpacity(0.2)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('exams')
-                      .where('creator', isEqualTo: userId)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    final count = snapshot.hasData
-                        ? _getUpcomingExamCount(snapshot.data!.docs)
-                        : 0;
-
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFB388F5).withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.assignment,
-                              color: Color(0xFFB388F5), size: 28),
-                        ),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "Upcoming Exams",
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              "$count",
-                              style: const TextStyle(
-                                color: Color(0xFFB388F5),
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    );
-                  },
-                ),
+            Container(
+              margin: EdgeInsetsDirectional.symmetric(horizontal: 19),
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3A3A5A),
+                borderRadius: BorderRadius.circular(16),
+                border:
+                    Border.all(color: const Color(0xFFB388F5).withOpacity(0.2)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-           
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('exams')
+                    .where('creator', isEqualTo: userId)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  final count = snapshot.hasData
+                      ? _getUpcomingExamCount(snapshot.data!.docs)
+                      : 0;
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFB388F5).withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.assignment,
+                            color: Color(0xFFB388F5), size: 28),
+                      ),
+                      const SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Upcoming Exams",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            "$count",
+                            style: const TextStyle(
+                              color: Color(0xFFB388F5),
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
 
             // Section Title + Add Button
             Padding(
@@ -126,12 +124,13 @@ class ExamPage extends StatelessWidget {
     );
   }
 
-  int _getUpcomingExamCount(List<DocumentSnapshot> docs) {
-    return docs.where((exam) {
-      final startTime = (exam['startTime'] as Timestamp).toDate();
-      return startTime.isAfter(DateTime.now());
-    }).length;
-  }
+int _getUpcomingExamCount(List<DocumentSnapshot> docs) {
+  return docs.where((exam) {
+    final endTime = (exam['endTime'] as Timestamp).toDate();
+    return endTime.isAfter(DateTime.now());
+  }).length;
+}
+
 
   Widget _buildExamList(String userId) {
     return StreamBuilder<QuerySnapshot>(
@@ -154,8 +153,8 @@ class ExamPage extends StatelessWidget {
         List<DocumentSnapshot> exams = snapshot.data!.docs;
 
         List<DocumentSnapshot> filteredExams = exams.where((exam) {
-          DateTime startTime = (exam['startTime'] as Timestamp).toDate();
-          return startTime.isAfter(DateTime.now());
+          DateTime endTime = (exam['endTime'] as Timestamp).toDate();
+          return endTime.isAfter(DateTime.now());
         }).toList();
 
         filteredExams.sort((a, b) {

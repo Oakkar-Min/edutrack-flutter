@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'exam_form.dart';
 
 class EditExamPage extends StatelessWidget {
-  const EditExamPage({super.key});
+  final String examId;
+
+  const EditExamPage({Key? key, required this.examId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,10 @@ class EditExamPage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: const ExamForm(buttonText: 'Save'),
+        child: ExamForm(
+          examId: examId,
+          buttonText: 'Save',
+        ),
       ),
     );
   }

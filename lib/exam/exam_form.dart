@@ -23,6 +23,45 @@ class _ExamFormState extends State<ExamForm> {
   final TextEditingController _venueController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   String selectedType = 'Module1';
+  
+@override
+void initState() {
+  super.initState();
+  if (widget.buttonText == 'Save' && widget.examId != null) {
+    _loadExamData();
+  }
+}
+
+Future<void> _loadExamData() async {
+  try {
+    final doc = await FirebaseFirestore.instance
+        .collection('exams')
+        .doc(widget.examId)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+      final examDate = (data['examDate'] as Timestamp).toDate();
+      final startTime = (data['startTime'] as Timestamp).toDate();
+      final endTime = (data['endTime'] as Timestamp).toDate();
+
+      setState(() {
+        _nameController.text = data['name'] ?? '';
+        selectedType = data['type'] ?? 'Module1';
+        _venueController.text = data['venue'] ?? '';
+        _descriptionController.text = data['description'] ?? '';
+
+        _dateController.text =
+            "${examDate.day}-${examDate.month}-${examDate.year}";
+        _startTimeController.text = DateFormat.jm().format(startTime);
+        _endTimeController.text = DateFormat.jm().format(endTime);
+      });
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text("Error loading exam: $e")));
+  }
+}
 
   @override
   Widget build(BuildContext context) {
