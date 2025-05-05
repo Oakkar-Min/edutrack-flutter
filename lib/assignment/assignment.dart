@@ -62,10 +62,14 @@ class _AssignmentTrackerPageState extends State<AssignmentTrackerPage> {
     await _assignmentsRef.doc(id).delete();
   }
 
-  bool _isOverdue(String dateStr) {
-    final dueDate = DateFormat('yyyy-MM-dd').parse(dateStr);
-    return dueDate.isBefore(DateTime.now());
-  }
+bool _isOverdue(String dateStr) {
+  final dueDate = DateFormat('yyyy-MM-dd').parse(dateStr);
+  final now = DateTime.now();
+  final todayStart = DateTime(now.year, now.month, now.day);
+  return dueDate.isBefore(todayStart);
+}
+
+
 
   String _calculatePriority(String dateStr) {
     final dueDate = DateFormat('yyyy-MM-dd').parse(dateStr);

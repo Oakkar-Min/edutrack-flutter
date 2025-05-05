@@ -23,7 +23,7 @@ class _ExamFormState extends State<ExamForm> {
   final TextEditingController _venueController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   String selectedType = 'Module1';
-  
+
 @override
 void initState() {
   super.initState();
@@ -246,8 +246,8 @@ Future<void> _loadExamData() async {
           onTap: () async {
             DateTime? pickedDate = await showDatePicker(
               context: context,
-              initialDate: DateTime.now().add(const Duration(days: 1)),
-              firstDate: DateTime.now().add(const Duration(days: 1)),
+              initialDate: DateTime.now(),
+              firstDate: DateTime.now(),
               lastDate: DateTime(2030),
             );
             if (pickedDate != null) {

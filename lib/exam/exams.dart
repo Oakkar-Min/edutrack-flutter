@@ -24,7 +24,7 @@ class ExamPage extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              margin: EdgeInsetsDirectional.symmetric(horizontal: 19),
+              margin: EdgeInsetsDirectional.symmetric(horizontal: 14),
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(

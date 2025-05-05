@@ -33,8 +33,9 @@ class AssignmentDetailDialog extends StatelessWidget {
         final priority = data['priority'];
         final status = data['status'];
         final description = data['description'];
-        final isOverdue =
-            DateTime.now().isAfter(dueDate) && status != "Completed";
+        final now = DateTime.now();
+final todayStart = DateTime(now.year, now.month, now.day); // Today at 00:00:00 (midnight)
+final isOverdue = dueDate.isBefore(todayStart) && status != "Completed";
 
         return AlertDialog(
           backgroundColor: const Color(0xFF2E2E48),
