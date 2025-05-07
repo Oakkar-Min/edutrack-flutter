@@ -4,6 +4,7 @@ import 'package:edu_track_project/exam/exams.dart';
 import 'package:edu_track_project/assignment/assignment.dart';
 import 'package:edu_track_project/studyplanner/add_study.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'auth/login_page.dart';
@@ -15,7 +16,6 @@ import 'package:edu_track_project/exam/add_exam_page.dart';
 import 'package:edu_track_project/exam/edit_exam_page.dart';
 import 'package:edu_track_project/class/add_class.dart';
 import 'package:edu_track_project/class/edit_class.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,8 +41,10 @@ class MyApp extends StatelessWidget {
           fillColor: Colors.white12,
           hintStyle: TextStyle(color: Colors.white54),
         ),
-        textTheme: const TextTheme(
-          bodyMedium: TextStyle(color: Colors.white),
+        textTheme: GoogleFonts.poppinsTextTheme(
+          ThemeData.dark().textTheme,
+        ).copyWith(
+          bodyMedium: const TextStyle(color: Colors.white),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -57,13 +59,13 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/main': (context) => const MainPage(),
-        '/assignments': (context) =>  const AssignmentTrackerPage(),
-        '/planner': (context) => const StudyPlannerPage(), 
+        '/assignments': (context) => const AssignmentTrackerPage(),
+        '/planner': (context) => const StudyPlannerPage(),
         '/exams': (context) => const ExamPage(),
-        '/classSchedule': (context) => const ClassSchedulePage(), 
+        '/classSchedule': (context) => const ClassSchedulePage(),
         '/add_exam': (context) => const AddExamPage(),
         '/add_class': (context) => const AddClassPage(),
-       '/edit_class': (context) => const EditClassPage(),
+        '/edit_class': (context) => const EditClassPage(),
         '/add_study': (context) => const AddTaskPage(),
       },
     );
