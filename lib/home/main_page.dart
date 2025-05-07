@@ -70,7 +70,7 @@ class _MainPageState extends State<MainPage>
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
     final username = currentUser?.displayName ?? "User";
-    final size = MediaQuery.of(context).size;
+    // final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E2E),

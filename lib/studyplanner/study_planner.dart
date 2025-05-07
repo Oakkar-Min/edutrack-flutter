@@ -330,7 +330,7 @@ class _StudyPlannerPageState extends State<StudyPlannerPage> with SingleTickerPr
     if (_listKey.currentState == null) return;
     
     // Save the current list length
-    final int oldLength = _currentFilteredTasks.length;
+    // final int oldLength = _currentFilteredTasks.length;
     
     // Update our reference
     _currentFilteredTasks = List.from(newList);

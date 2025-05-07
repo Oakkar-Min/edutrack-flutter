@@ -163,18 +163,18 @@ class _AssignmentTrackerPageState extends State<AssignmentTrackerPage> with Sing
     );
   }
 
-  Color _getPriorityColor(String priority) {
-    switch (priority) {
-      case 'High':
-        return Colors.redAccent;
-      case 'Medium':
-        return Colors.orangeAccent;
-      case 'Low':
-        return Colors.greenAccent;
-      default:
-        return Colors.blueAccent;
-    }
-  }
+  // Color _getPriorityColor(String priority) {
+  //   switch (priority) {
+  //     case 'High':
+  //       return Colors.redAccent;
+  //     case 'Medium':
+  //       return Colors.orangeAccent;
+  //     case 'Low':
+  //       return Colors.greenAccent;
+  //     default:
+  //       return Colors.blueAccent;
+  //   }
+  // }
 
   Widget _buildAssignmentTracker(
       int total, int pending, int completed, int overdue) {

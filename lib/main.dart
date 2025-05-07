@@ -13,7 +13,7 @@ import 'home/main_page.dart';
 import 'studyplanner/study_planner.dart';
 import 'class/class_schedule.dart';
 import 'package:edu_track_project/exam/add_exam_page.dart';
-import 'package:edu_track_project/exam/edit_exam_page.dart';
+// import 'package:edu_track_project/exam/edit_exam_page.dart';
 import 'package:edu_track_project/class/add_class.dart';
 import 'package:edu_track_project/class/edit_class.dart';
 
